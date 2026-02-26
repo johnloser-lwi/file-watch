@@ -1,0 +1,49 @@
+[watch]
+source = "C:/Users/john-/Downloads"
+stable_for = 5.0        # seconds of size stability before moving
+poll_interval = 1.0     # how often to check file sizes
+max_wait = 0            # max seconds to track a growing file (0 = forever)
+
+# ---------------------------------------------------------------------------
+# Routes: define where each file type goes.
+# Rules are evaluated top-to-bottom; the first match wins.
+# A route with no "extensions" list is a catch-all and must be placed last.
+# ---------------------------------------------------------------------------
+
+[[routes]]
+destination = "D:/Work/Jean-Marc/_Projects/AI Meducated/Images"
+extensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic"]
+
+[[routes]]
+destination = "D:/Work/Jean-Marc/_Projects/AI Meducated/Footages"
+extensions = [".mp4", ".mkv", ".avi", ".mov", ".wmv"]
+
+[[routes]]
+# No extensions = catch-all for anything not matched above.
+#destination = "C:/Users/john-/Downloads"
+
+# ---------------------------------------------------------------------------
+# Ignore: files matching these rules are never tracked or moved.
+# ---------------------------------------------------------------------------
+
+[ignore]
+extensions = [".tmp", ".part", ".crdownload", ".download"]
+patterns   = ["~*", ".~*", "*.!ut", "desktop.ini", "Thumbs.db"]
+
+# ---------------------------------------------------------------------------
+# Conflict resolution
+# ---------------------------------------------------------------------------
+
+[move]
+on_conflict = "skip"                  # skip | overwrite | rename
+rename_template = "{stem}_{n}{suffix}"  # tokens: {stem} {suffix} {n} {ts}
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+
+[logging]
+level = "INFO"          # DEBUG | INFO | WARNING | ERROR
+log_file = ""           # optional path; empty = stderr only
+log_max_bytes = 10485760
+log_backup_count = 3

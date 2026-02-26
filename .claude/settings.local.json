@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python --version 2>&1 && pip --version 2>&1)",
+      "Bash(pip show:*)",
+      "Bash(echo no toml support:*)",
+      "Bash(python:*)",
+      "Bash(tail:*)",
+      "Bash(echo exit: $?:*)"
+    ]
+  }
+}
