@@ -186,7 +186,8 @@ def run_watcher(cfg) -> None:
     signal.signal(signal.SIGTERM, _shutdown)
 
     try:
-        stop_event.wait()
+        while not stop_event.wait(timeout=0.5):
+            pass
     finally:
         observer.stop()
         observer.join()
