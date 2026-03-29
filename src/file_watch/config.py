@@ -20,6 +20,7 @@ else:
 
 VALID_CONFLICT_STRATEGIES = ("skip", "overwrite", "rename")
 VALID_LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR")
+VALID_OPERATIONS = ("move", "copy")
 
 
 def _normalize_ext(ext: str) -> str:
@@ -39,6 +40,7 @@ class Route:
     """
     destination: str
     extensions: tuple  # tuple[str, ...] — normalized lowercase with dot
+    operation: str = "move"  # "move" or "copy"
 
     @property
     def is_catch_all(self) -> bool:
@@ -133,7 +135,8 @@ def _parse_routes(raw_routes: list) -> tuple:
     for r in raw_routes:
         dest = r.get("destination", "")
         exts = tuple(_normalize_ext(e) for e in r.get("extensions", []))
-        result.append(Route(destination=dest, extensions=exts))
+        op = r.get("operation", "move")
+        result.append(Route(destination=dest, extensions=exts, operation=op))
     return tuple(result)
 
 
@@ -261,6 +264,11 @@ def validate_config(cfg: Config) -> None:
             raise ValueError(
                 f"source and destination must differ: "
                 f"route[{i}] destination equals source ({src})"
+            )
+        if route.operation not in VALID_OPERATIONS:
+            raise ValueError(
+                f"route[{i}] operation must be one of {VALID_OPERATIONS}, "
+                f"got {route.operation!r}"
             )
 
     # A non-terminal catch-all shadows every route after it

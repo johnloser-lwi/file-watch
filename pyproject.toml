@@ -10,6 +10,7 @@ dependencies = [
     "watchdog>=4.0",
     "click>=8.0",
     "tomli>=2.0; python_version < '3.11'",
+    "ttkbootstrap>=1.10",
 ]
 
 [project.optional-dependencies]
@@ -17,6 +18,7 @@ dev = ["pytest>=7.0", "pytest-timeout"]
 
 [project.scripts]
 file-watch = "file_watch.cli:main"
+file-watch-gui = "file_watch.gui.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

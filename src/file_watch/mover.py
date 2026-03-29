@@ -119,7 +119,7 @@ class StabilityChecker(threading.Thread):
 
             # Size and mtime unchanged — check stability window
             if (now - entry.size_stable_since) >= self._cfg.stable_for:
-                log.info("Stable, moving: %s (%d bytes)", path, stat.st_size)
+                log.info("Stable, processing: %s (%d bytes)", path, stat.st_size)
                 to_remove.append(path)
                 self._move_file(path)
 
@@ -136,6 +136,7 @@ class StabilityChecker(threading.Thread):
             return
 
         dest_dir = Path(route.destination)
+        operation = getattr(route, 'operation', 'move')
 
         try:
             dest = resolve_destination(
@@ -152,28 +153,35 @@ class StabilityChecker(threading.Thread):
             return
 
         if self._cfg.dry_run:
-            log.info("[DRY RUN] Would move: %s → %s", path, dest)
+            verb = "copy" if operation == "copy" else "move"
+            log.info("[DRY RUN] Would %s: %s → %s", verb, path, dest)
             return
 
-        self._do_move(src, dest)
+        self._do_transfer(src, dest, operation)
 
-    def _do_move(self, src: Path, dest: Path) -> None:
+    def _do_transfer(self, src: Path, dest: Path, operation: str = "move") -> None:
+        verb = "Copying" if operation == "copy" else "Moving"
+        past = "Copied" if operation == "copy" else "Moved"
         for attempt in range(1, _MOVE_RETRY_COUNT + 1):
             try:
-                shutil.move(str(src), str(dest))
-                log.info("Moved: %s → %s", src, dest)
+                if operation == "copy":
+                    shutil.copy2(str(src), str(dest))
+                else:
+                    shutil.move(str(src), str(dest))
+                log.info("%s: %s → %s", past, src, dest)
                 return
             except PermissionError as exc:
                 if attempt < _MOVE_RETRY_COUNT:
                     log.warning(
-                        "PermissionError moving %s (attempt %d/%d): %s — retrying in %.1fs",
-                        src, attempt, _MOVE_RETRY_COUNT, exc, _MOVE_RETRY_DELAY,
+                        "PermissionError %s %s (attempt %d/%d): %s — retrying in %.1fs",
+                        verb.lower(), src, attempt, _MOVE_RETRY_COUNT, exc, _MOVE_RETRY_DELAY,
                     )
                     time.sleep(_MOVE_RETRY_DELAY)
                 else:
                     log.error(
-                        "Failed to move %s after %d attempts: %s", src, _MOVE_RETRY_COUNT, exc
+                        "Failed to %s %s after %d attempts: %s",
+                        operation, src, _MOVE_RETRY_COUNT, exc,
                     )
             except OSError as exc:
-                log.error("Error moving %s → %s: %s", src, dest, exc)
+                log.error("Error %s %s → %s: %s", verb.lower(), src, dest, exc)
                 return

@@ -41,6 +41,13 @@ def version() -> None:
     click.echo(f"file-watch {__version__}")
 
 
+@main.command()
+def gui() -> None:
+    """Launch the graphical interface."""
+    from file_watch.gui.app import main as gui_main
+    gui_main()
+
+
 @main.command(name="config-path")
 @click.pass_context
 def config_path_cmd(ctx: click.Context) -> None:
